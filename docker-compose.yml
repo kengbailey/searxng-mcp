@@ -3,10 +3,9 @@ version: '3.8'
 services:
   search-app:
     build: .
-    container_name: search-mcp-server
+    container_name: searxng-mcp
     ports:
       - "3090:3090"
     environment:
-      # Configure the SearxNG host via environment variable
       - SEARXNG_HOST=http://berry:8189
     restart: unless-stopped
