@@ -1,4 +1,4 @@
-# FastMCP Search Server
+# Searxng MCP Server
 
 A simple FastMCP server that exposes SearxNG search functionality as MCP tools for AI assistants.
 
@@ -56,9 +56,3 @@ Both tools accept:
 - `query` (required) - search terms
 - `max_results` (optional) - number of results 
 - `host` (optional) - SearxNG server URL
-
-## Files
-
-- `search_mcp_server.py` - The MCP server
-- `app.py` - SearxNG integration
-- `test_search_client.py` - Test client
