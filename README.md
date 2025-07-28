@@ -33,11 +33,6 @@ Server will run at `http://localhost:3090`
 python test_search_client.py
 ```
 
-**HTTP client:**
-```bash
-python test_http_client.py
-```
-
 ### Use with Claude Desktop:
 
 Add to your MCP config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
