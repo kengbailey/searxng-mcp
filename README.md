@@ -17,20 +17,30 @@ A simple FastMCP server that exposes SearxNG search functionality as MCP tools f
 
 **MCP mode (stdio):**
 ```bash
-python search_mcp_server.py
+python -m src.server.mcp_server
 ```
 
 **HTTP mode:**
 ```bash
-python search_mcp_server.py --http
+python -m src.server.mcp_server --http
 ```
 Server will run at `http://localhost:3090`
 
 ### Test it:
 
-**MCP client:**
+**Integration test:**
 ```bash
-python test_search_client.py
+python -m tests.integration.test_client
+```
+
+**Unit tests:**
+```bash
+python -m unittest discover tests
+```
+
+**Functionality test:**
+```bash
+python test_functionality.py
 ```
 
 ### Use with Claude Desktop:
@@ -41,7 +51,8 @@ Add to your MCP config (`~/Library/Application Support/Claude/claude_desktop_con
   "mcpServers": {
     "search-server": {
       "command": "python",
-      "args": ["/absolute/path/to/search_mcp_server.py"]
+      "args": ["-m", "src.server.mcp_server"],
+      "cwd": "/absolute/path/to/searxng-mcp-server"
     }
   }
 }

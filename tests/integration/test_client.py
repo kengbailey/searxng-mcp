@@ -1,5 +1,5 @@
 """
-Test client for the FastMCP search server
+Integration test client for the FastMCP search server
 """
 
 import asyncio
@@ -9,7 +9,7 @@ async def test_search_tools():
     """Test the search tools exposed by the MCP server"""
     
     # Create a client that connects to the search server
-    client = Client("search_mcp_server.py")
+    client = Client("src/server/mcp_server.py")
     
     async with client:
         print("=== Testing FastMCP Search Server ===\n")
@@ -96,6 +96,7 @@ async def test_search_tools():
                 print(f"  - {tool.name}: {tool.description}")
         except Exception as e:
             print(f"Error listing tools: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(test_search_tools())

@@ -1,0 +1,3 @@
+"""
+SearxNG MCP Server package
+"""
