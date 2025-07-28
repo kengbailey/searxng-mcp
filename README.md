@@ -46,18 +46,15 @@ docker-compose up -d
 
 The server will be available at `http://localhost:3090`
 
-```
-
 ### Use with Claude Desktop:
 
-Add to your MCP config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "search-server": {
       "command": "python",
       "args": ["-m", "src.server.mcp_server"],
-      "cwd": "/absolute/path/to/searxng-mcp-server"
+      "cwd": "/absolute/path/to/searxng-mcp"
     }
   }
 }
