@@ -60,10 +60,6 @@ Add to your MCP config (`~/Library/Application Support/Claude/claude_desktop_con
 
 ## Tools
 
-- **`web_search`** - Returns full search results with titles, URLs, snippets, scores
-- **`search_summary`** - Returns condensed results with top matches
-
-Both tools accept:
-- `query` (required) - search terms
-- `max_results` (optional) - number of results 
-- `host` (optional) - SearxNG server URL
+- **`search`** - Returns full search results with titles, URLs, snippets, scores
+  - `query` (required) - search terms
+  - `max_results` (optional) - number of results 
