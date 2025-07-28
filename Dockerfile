@@ -22,10 +22,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY app.py .
-COPY search_mcp_server.py .
-COPY test_*.py ./
+# Copy the entire src directory and its structure
+COPY src/ ./src/
 
 # Create non-root user for security
 RUN useradd --create-home --shell /bin/bash appuser && \
@@ -35,5 +33,5 @@ USER appuser
 # Expose port for HTTP mode
 EXPOSE 3090
 
-# Default command (can be overridden)
-CMD ["python", "search_mcp_server.py", "--http"]
+# Run the server using the new module structure
+CMD ["python", "-m", "src.server.mcp_server", "--http"]
