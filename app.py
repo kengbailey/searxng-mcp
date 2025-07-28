@@ -1,6 +1,10 @@
+import os
 import requests
 from typing import List, Optional, Union
 from pydantic import BaseModel
+
+# Configuration
+DEFAULT_SEARXNG_HOST = os.getenv('SEARXNG_HOST', 'http://berry:8189')
 
 # Specific data models for different search types
 class GeneralSearchResult(BaseModel):
@@ -52,8 +56,10 @@ class RawSearxngResponse(BaseModel):
     unresponsive_engines: List[List[str]] = []
 
 # Internal function for making raw SearxNG requests
-def _search_searxng_raw(query: str, host: str = 'http://berry:8189', engines=None, categories=None, max_results=None) -> RawSearxngResponse:
+def _search_searxng_raw(query: str, host: str = None, engines=None, categories=None, max_results=None) -> RawSearxngResponse:
     """Internal function to perform raw SearxNG search."""
+    if host is None:
+        host = DEFAULT_SEARXNG_HOST
     url = f"{host}/search"
     params = {'q': query, 'format': 'json'}
     
@@ -83,7 +89,7 @@ def _search_searxng_raw(query: str, host: str = 'http://berry:8189', engines=Non
     except Exception as e:
         raise Exception(f"Failed to parse search response: {e}")
 
-def search_general(query: str, host: str = 'http://berry:8189', max_results: int = 15) -> List[GeneralSearchResult]:
+def search_general(query: str, host: str = None, max_results: int = 15) -> List[GeneralSearchResult]:
     """
     Perform a general web search and return cleaned results.
     
@@ -110,7 +116,7 @@ def search_general(query: str, host: str = 'http://berry:8189', max_results: int
     
     return results
 
-def search_videos(query: str, host: str = 'http://berry:8189', engines: str = 'youtube', max_results: int = 10) -> List[VideoSearchResult]:
+def search_videos(query: str, host: str = None, engines: str = 'youtube', max_results: int = 10) -> List[VideoSearchResult]:
     """
     Perform a video search and return cleaned results.
     

@@ -3,23 +3,24 @@ FastMCP Server for exposing search functionality
 Provides general web search capabilities via SearxNG
 """
 
+import os
 from fastmcp import FastMCP
 from typing import List, Dict, Any
-from app import search_general, GeneralSearchResult
+from app import search_general, GeneralSearchResult, DEFAULT_SEARXNG_HOST
 import json
 
 # Create the MCP server
 mcp = FastMCP("Search Server")
 
 @mcp.tool
-def web_search(query: str, max_results: int = 10, host: str = 'http://berry:8189') -> List[Dict[str, Any]]:
+def web_search(query: str, max_results: int = 10, host: str = None) -> List[Dict[str, Any]]:
     """
     Perform a general web search using SearxNG.
     
     Args:
         query: The search query to execute
         max_results: Maximum number of results to return (default: 10, max: 25)
-        host: SearxNG server URL (default: 'http://berry:8189')
+        host: SearxNG server URL (uses SEARXNG_HOST env var if not specified)
         
     Returns:
         List of search results with title, url, content, score, category, and author
@@ -31,6 +32,9 @@ def web_search(query: str, max_results: int = 10, host: str = 'http://berry:8189
         max_results = 1
     
     try:
+        # Use default host if not provided
+        if host is None:
+            host = DEFAULT_SEARXNG_HOST
         # Call the existing search function
         results = search_general(query, host=host, max_results=max_results)
         
@@ -51,14 +55,14 @@ def web_search(query: str, max_results: int = 10, host: str = 'http://berry:8189
         return [{"error": f"Search failed: {str(e)}"}]
 
 @mcp.tool  
-def search_summary(query: str, max_results: int = 5, host: str = 'http://berry:8189') -> Dict[str, Any]:
+def search_summary(query: str, max_results: int = 5, host: str = None) -> Dict[str, Any]:
     """
     Perform a web search and return a summary with key information.
     
     Args:
         query: The search query to execute
         max_results: Maximum number of results to analyze (default: 5, max: 15)
-        host: SearxNG server URL (default: 'http://berry:8189')
+        host: SearxNG server URL (uses SEARXNG_HOST env var if not specified)
         
     Returns:
         Summary containing query info, result count, and top results with snippets
@@ -70,6 +74,9 @@ def search_summary(query: str, max_results: int = 5, host: str = 'http://berry:8
         max_results = 1
     
     try:
+        # Use default host if not provided
+        if host is None:
+            host = DEFAULT_SEARXNG_HOST
         # Call the existing search function
         results = search_general(query, host=host, max_results=max_results)
         
