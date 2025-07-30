@@ -28,6 +28,20 @@ def search(query: str, max_results: int = 10):
     return handlers.search(query, max_results)
 
 
+@mcp.tool
+async def fetch_content(url: str):
+    """
+    Fetch and parse content from a webpage URL.
+    
+    Args:
+        url: The webpage URL to fetch content from
+        
+    Returns:
+        Dictionary containing parsed content and metadata
+    """
+    return await handlers.fetch_content(url)
+
+
 def run_server():
     """Run the MCP server with appropriate transport."""
     # Check for HTTP mode flag

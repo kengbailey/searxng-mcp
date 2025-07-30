@@ -4,6 +4,7 @@ MCP tool handlers for search functionality
 
 from typing import List, Dict, Any
 from ..core.search import SearxngClient
+from ..core.web_fetcher import WebContentFetcher
 from ..core.config import SearchConfig, SearchException
 
 
@@ -12,6 +13,7 @@ class SearchHandlers:
     
     def __init__(self):
         self.client = SearxngClient()
+        self.fetcher = WebContentFetcher()
     
     def search(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
         """
@@ -50,3 +52,34 @@ class SearchHandlers:
         except Exception as e:
             # Handle unexpected errors
             return [{"error": f"Unexpected error: {str(e)}"}]
+    
+    async def fetch_content(self, url: str) -> Dict[str, Any]:
+        """
+        Fetch and parse content from a webpage URL.
+        
+        Args:
+            url: The webpage URL to fetch content from
+            
+        Returns:
+            Dictionary containing the parsed content or error information
+        """
+        try:
+            content = await self.fetcher.fetch_and_parse(url)
+            return {
+                "url": url,
+                "content": content,
+                "content_length": len(content),
+                "success": True
+            }
+        except SearchException as e:
+            return {
+                "url": url,
+                "error": str(e),
+                "success": False
+            }
+        except Exception as e:
+            return {
+                "url": url,
+                "error": f"Unexpected error: {str(e)}",
+                "success": False
+            }
