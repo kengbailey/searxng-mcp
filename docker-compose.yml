@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
-  search-app:
-    build: .
+  searxng-mcp:
+    image: searxng-mcp
     container_name: searxng-mcp
     ports:
       - "3090:3090"
