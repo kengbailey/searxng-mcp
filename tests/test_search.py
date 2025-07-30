@@ -1,8 +1,8 @@
 """
-Unit tests for core search functionality
+Tests for core search functionality
 """
 
-import unittest
+import pytest
 from unittest.mock import patch, Mock
 import requests
 
@@ -11,22 +11,22 @@ from src.core.config import SearchRequestException, SearchParseException
 from src.core.models import RawSearxngResponse, RawResult
 
 
-class TestSearxngClient(unittest.TestCase):
+class TestSearxngClient:
     """Test cases for SearxngClient class."""
     
-    def setUp(self):
+    def setup_method(self):
         self.client = SearxngClient()
     
     def test_init_default_host(self):
         """Test client initialization with default host."""
         client = SearxngClient()
-        self.assertIn('berry:8189', client.host)
+        assert 'berry:8189' in client.host
     
     def test_init_custom_host(self):
         """Test client initialization with custom host."""
         custom_host = "http://example.com:8080"
         client = SearxngClient(custom_host)
-        self.assertEqual(client.host, custom_host)
+        assert client.host == custom_host
     
     @patch('src.core.search.requests.get')
     def test_search_raw_success(self, mock_get):
@@ -49,17 +49,17 @@ class TestSearxngClient(unittest.TestCase):
         result = self.client._search_raw('test query')
         
         # Verify
-        self.assertIsInstance(result, RawSearxngResponse)
-        self.assertEqual(result.query, 'test query')
-        self.assertEqual(len(result.results), 1)
-        self.assertEqual(result.results[0].title, 'Test Result')
+        assert isinstance(result, RawSearxngResponse)
+        assert result.query == 'test query'
+        assert len(result.results) == 1
+        assert result.results[0].title == 'Test Result'
     
     @patch('src.core.search.requests.get')
     def test_search_raw_request_failure(self, mock_get):
         """Test search request failure."""
         mock_get.side_effect = requests.exceptions.RequestException("Network error")
         
-        with self.assertRaises(SearchRequestException):
+        with pytest.raises(SearchRequestException):
             self.client._search_raw('test query')
     
     @patch('src.core.search.requests.get')
@@ -70,7 +70,7 @@ class TestSearxngClient(unittest.TestCase):
         mock_response.json.side_effect = ValueError("Invalid JSON")
         mock_get.return_value = mock_response
         
-        with self.assertRaises(SearchParseException):
+        with pytest.raises(SearchParseException):
             self.client._search_raw('test query')
     
     @patch.object(SearxngClient, '_search_raw')
@@ -96,11 +96,11 @@ class TestSearxngClient(unittest.TestCase):
         results = self.client.search_general('test query')
         
         # Verify
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].title, 'Test Result')
-        self.assertEqual(results[0].url, 'http://example.com')
-        self.assertEqual(results[0].content, 'Test content')
-        self.assertEqual(results[0].score, 0.95)
+        assert len(results) == 1
+        assert results[0].title == 'Test Result'
+        assert results[0].url == 'http://example.com'
+        assert results[0].content == 'Test content'
+        assert results[0].score == 0.95
     
     @patch.object(SearxngClient, '_search_raw')
     def test_search_videos_success(self, mock_search_raw):
@@ -126,15 +126,15 @@ class TestSearxngClient(unittest.TestCase):
         results = self.client.search_videos('test video query')
         
         # Verify
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0].title, 'Test Video')
-        self.assertEqual(results[0].url, 'http://youtube.com/watch?v=test')
-        self.assertEqual(results[0].author, 'Test Author')
-        self.assertEqual(results[0].duration, '5:30')
-        self.assertEqual(results[0].published_date, '2024-01-01')
+        assert len(results) == 1
+        assert results[0].title == 'Test Video'
+        assert results[0].url == 'http://youtube.com/watch?v=test'
+        assert results[0].author == 'Test Author'
+        assert results[0].duration == '5:30'
+        assert results[0].published_date == '2024-01-01'
 
 
-class TestConvenienceFunctions(unittest.TestCase):
+class TestConvenienceFunctions:
     """Test cases for convenience functions."""
     
     @patch.object(SearxngClient, 'search_general')
@@ -145,7 +145,7 @@ class TestConvenienceFunctions(unittest.TestCase):
         result = search_general('test query')
         
         mock_search_general.assert_called_once_with('test query', None)
-        self.assertEqual(result, [])
+        assert result == []
     
     @patch.object(SearxngClient, 'search_videos')
     def test_search_videos_function(self, mock_search_videos):
@@ -155,8 +155,4 @@ class TestConvenienceFunctions(unittest.TestCase):
         result = search_videos('test query')
         
         mock_search_videos.assert_called_once_with('test query', 'youtube', None)
-        self.assertEqual(result, [])
-
-
-if __name__ == '__main__':
-    unittest.main()
+        assert result == []
