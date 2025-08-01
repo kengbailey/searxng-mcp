@@ -27,7 +27,7 @@ Or you can build and run manually
 docker build -t searxng-mcp .
 
 # Run
-docker-compose run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 searxng-mcp
+docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 searxng-mcp
 ```
 The server will be available at `http://localhost:3090/mcp`
 
