@@ -3,7 +3,9 @@ FastMCP Server for exposing search functionality
 Provides general web search capabilities via SearxNG
 """
 
+import argparse
 import sys
+from typing import Any, Dict
 from fastmcp import FastMCP
 from .handlers import SearchHandlers
 
@@ -28,8 +30,12 @@ def search(query: str, max_results: int = 10):
     return handlers.search(query, max_results)
 
 
-@mcp.tool
-async def fetch_content(url: str):
+@mcp.tool(
+    name="fetch_content",
+    tags={"web", "fetch"},
+    enabled=True,
+)
+async def fetch_content(url: str) -> Dict[str, Any]:
     """
     Fetch and parse content from a webpage URL.
     
@@ -43,15 +49,25 @@ async def fetch_content(url: str):
 
 
 def run_server():
-    """Run the MCP server with appropriate transport."""
-    # Check for HTTP mode flag
-    if len(sys.argv) > 1 and sys.argv[1] == "--http":
-        # Run with HTTP transport on port 3090
-        mcp.run(transport="http", host="0.0.0.0", port=3090)
-        print("Server running on http://0.0.0.0:3090")
+    """Run the MCP server with appropriate transport and configurable port."""
+    # args
+    parser = argparse.ArgumentParser(description="Run MCP server with configurable transport and port")
+    parser.add_argument('--port', type=int, default=3090, help='Port number for HTTP transport (default: 3090)')
+    parser.add_argument('--http', action='store_true', help='Run server with HTTP transport')
+    parser.add_argument('--sse', action='store_true', help='Run server with SSE transport')
+    args = parser.parse_args()
+
+    # Run server with appropriate transport and port
+    if args.http:
+        mcp.run(transport="http", host="0.0.0.0", port=args.port)
+        print(f"Server running on http://0.0.0.0:{args.port} with HTTP transport")
+    elif args.sse:
+        mcp.run(transport="sse", host="0.0.0.0", port=args.port)
+        print(f"Server running on http://0.0.0.0:{args.port} with SSE transport")
     else:
-        # Default stdio transport for MCP
-        mcp.run()
+        mcp.run(transport="http", host="0.0.0.0", port=args.port)
+        print(f"Server running on http://0.0.0.0:{args.port} with HTTP transport")
+
 
 
 if __name__ == "__main__":

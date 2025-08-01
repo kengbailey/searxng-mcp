@@ -25,7 +25,7 @@ class SearchConfig:
     DEFAULT_SUMMARY_RESULTS = 5
     
     # Web fetching configuration
-    MAX_CONTENT_LENGTH = 8000
+    MAX_CONTENT_LENGTH = 10000
     FETCH_TIMEOUT = 30.0
     USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
