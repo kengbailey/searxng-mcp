@@ -17,7 +17,7 @@ class WebContentFetcher:
             "User-Agent": SearchConfig.USER_AGENT
         }
     
-    async def fetch_and_parse(self, url: str) -> str:
+    async def fetch_and_parse(self, url: str) -> tuple[str, bool]:
         """
         Fetch and parse content from a webpage.
         
@@ -41,10 +41,18 @@ class WebContentFetcher:
                 response.raise_for_status()
                 
                 # Parse the HTML
-                soup = BeautifulSoup(response.text, "html.parser")
+                try:
+                    soup = BeautifulSoup(response.text, "lxml")
+                except Exception as e:
+                    # Fallback to html.parser if lxml fails
+                    soup = BeautifulSoup(response.text, "html.parser")
                 
                 # Remove script and style elements
-                for element in soup(["script", "style", "nav", "header", "footer"]):
+                unwanted_tags = [
+                    "script", "style", "nav", "header", "footer", "aside", 
+                    "advertisement", "ads", "sidebar", "menu", "widget", "banner"
+                ]
+                for element in soup(unwanted_tags):
                     element.decompose()
                 
                 # Get the text content
@@ -59,10 +67,12 @@ class WebContentFetcher:
                 text = re.sub(r"\s+", " ", text).strip()
                 
                 # Truncate if too long
+                is_truncated = False
                 if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
                     text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
+                    is_truncated = True
                 
-                return text
+                return text, is_truncated
                 
         except httpx.TimeoutException:
             raise SearchException("Request timed out while fetching the webpage")
