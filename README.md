@@ -1,62 +1,41 @@
-# Searxng MCP Server
+# SearXNG MCP Server
 
-A simple FastMCP server that exposes SearxNG search functionality as MCP tools for AI assistants.
+A simple FastMCP server that exposes SearXNG search functionality as MCP tools for AI assistants.
 
 ## Tools
 
 - **`search`** - Returns full search results with titles, URLs, snippets, scores
   - `query` (required) - search terms
   - `max_results` (optional) - number of results 
+- **`fetch_content`** - Returns the content of a URL
+  - `url` (required) - URL to fetch content from
 
-## Setup
+## Use with Docker
+The below instructions will help you get setup with an HTTP MCP server. 
 
-1. **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-2. **Ensure SearxNG is running** at `http://berry:8189` (or update the host in the code)
-
-## Usage
-
-**MCP mode (stdio):**
+If you have an existing SearXNG instance, pull latest image and run manually
 ```bash
-python -m src.server.mcp_server
-```
+# Pull 
+docker pull ghcr.io/kengbailey/searxng-mcp:latest
 
-**HTTP mode:**
+# Run 
+docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 ghcr.io/kengbailey/searxng-mcp:latest
+```
+Or you can build and run manually
 ```bash
-python -m src.server.mcp_server --http
+# Build
+docker build -t searxng-mcp .
+
+# Run
+docker-compose run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 searxng-mcp
 ```
-Server will run at `http://localhost:3090`
+The server will be available at `http://localhost:3090/mcp`
 
-**With Docker (recommended):**
+NOTE! If you don't have an existing SearXNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearXNG and the MCP server with Docker.
 
-Build and run manually:
-```bash
-# Build the image
-docker build -t searxng-mcp:latest .
+<hr>
 
-# Run directly
-docker run -p 3090:3090 -e SEARXNG_HOST=http://your-searxng-host:8189 searxng-mcp:latest
-
-# Or using docker-compose (recommended)
-docker-compose up -d
-```
-
-The server will be available at `http://localhost:3090`
-
-### Use with Claude Desktop:
-
-```json
-{
-  "mcpServers": {
-    "search-server": {
-      "command": "python",
-      "args": ["-m", "src.server.mcp_server"],
-      "cwd": "/absolute/path/to/searxng-mcp"
-    }
-  }
-}
-```
-
+#### TODO
+- [ ] Add support for setting search types (e.g. general, videos, news)
+- [ ] Add support for setting search engines (e.g. google, bing, duckduckgo)
+- [ ] Add instructions for simple python setup
