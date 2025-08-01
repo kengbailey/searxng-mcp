@@ -10,30 +10,7 @@ A simple FastMCP server that exposes SearxNG search functionality as MCP tools f
 - **`fetch_content`** - Returns the content of a URL
   - `url` (required) - URL to fetch content from
 
-## Setup
-
-1. **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-2. **Ensure SearxNG is running** at `http://localhost:8189` (or update the host in the code)
-
-## Usage
-
-**MCP mode (stdio):**
-```bash
-python -m src.server.mcp_server -sse
-```
-Server will run at `http://localhost:3090/sse`
-
-**HTTP mode:**
-```bash
-python -m src.server.mcp_server --http
-```
-Server will run at `http://localhost:3090/mcp`
-
-### Use with Docker
+## Use with Docker
 
 If you have an existing SearxNG instance, pull latest image and run manually
 ```bash
@@ -49,12 +26,11 @@ Or you can build and run manually
 
 # Or using docker-compose (recommended)
 # Be sure to edit docker compose w/ your Searxng host 
-docker-compose up -d
+docker-compose run -e SEARXNG_HOST=http://your-host:8080 searxng-mcp
 ```
-
 The server will be available at `http://localhost:3090`
 
-NOTE! If you don't have an existing SearxNG instance: [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md)
+NOTE! If you don't have an existing SearxNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearxNG and the MCP server with Docker.
 
 ### Use with Claude Desktop:
 
