@@ -1,6 +1,6 @@
 services:
   searxng-mcp:
-    image: searxng-mcp
+    image: ghcr.io/kengbailey/searxng-mcp:latest
     container_name: searxng-mcp
     ports:
       - "3090:3090"
