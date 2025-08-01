@@ -33,6 +33,8 @@ The server will be available at `http://localhost:3090/mcp`
 
 NOTE! If you don't have an existing SearXNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearXNG and the MCP server with Docker.
 
+<hr>
+
 #### TODO
 - [ ] Add support for setting search types (e.g. general, videos, news)
 - [ ] Add support for setting search engines (e.g. google, bing, duckduckgo)
