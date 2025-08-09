@@ -21,7 +21,7 @@ class TestWebContentFetcher:
         # Use a reliable test URL
         url = "https://httpbin.org/html"
         
-        content, _ = await self.fetcher.fetch_and_parse(url)
+        content = await self.fetcher.fetch_and_parse(url)
         
         assert isinstance(content, str)
         assert len(content) > 0
@@ -49,7 +49,7 @@ class TestWebContentFetcher:
         # httpbin.org/html has known HTML structure
         url = "https://httpbin.org/html"
         
-        content, _ = await self.fetcher.fetch_and_parse(url)
+        content = await self.fetcher.fetch_and_parse(url)
         
         # Should not contain HTML tags
         assert "<" not in content
