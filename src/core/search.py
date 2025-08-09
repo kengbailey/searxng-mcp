@@ -115,7 +115,7 @@ class SearxngClient:
                 title=result.title,
                 url=result.url,
                 content=result.content,
-                score=result.score,
+                score=round(result.score, 2),
                 category=result.category,
                 author=result.author
             ))
