@@ -17,7 +17,7 @@ class WebContentFetcher:
             "User-Agent": SearchConfig.USER_AGENT
         }
     
-    async def fetch_and_parse(self, url: str) -> str:
+    async def fetch_and_parse(self, url: str) -> tuple[str,bool]:
         """
         Fetch and parse content from a webpage.
         
@@ -67,12 +67,12 @@ class WebContentFetcher:
                 text = re.sub(r"\s+", " ", text).strip()
                 
                 # Truncate if too long
-                # is_truncated = False
-                # if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
-                #     text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
-                #     is_truncated = True
+                is_truncated = False
+                if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
+                    text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
+                    is_truncated = True
                 
-                return text
+                return text, is_truncated
                 
         except httpx.TimeoutException:
             raise SearchException("Request timed out while fetching the webpage")
