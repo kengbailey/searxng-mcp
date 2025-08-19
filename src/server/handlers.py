@@ -66,7 +66,6 @@ class SearchHandlers:
         try:
             content, is_truncated = await self.fetcher.fetch_and_parse(url)
             return {
-                "url": url,
                 "content": content,
                 "content_length": len(content),
                 "is_truncated": is_truncated,
