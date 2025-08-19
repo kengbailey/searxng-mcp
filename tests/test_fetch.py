@@ -57,3 +57,21 @@ class TestWebContentFetcher:
         
         # Should contain readable text
         assert len(content.strip()) > 0
+    
+    @pytest.mark.asyncio
+    async def test_fetch_pdf_content(self):
+        """Test fetching and parsing PDF content using a real PDF URL."""        
+        pdf_url = "https://s28.q4cdn.com/823357996/files/doc_financials/2025/q1/DNA-Q1-2025-10Q.pdf"
+        text, is_truncated = await self.fetcher.fetch_and_parse(pdf_url)
+        
+        # Basic assertions
+        assert text is not None
+        assert isinstance(text, str)
+        assert len(text) > 0
+        
+        # Should contain some expected financial document content
+        text_lower = text.lower()
+        assert any(term in text_lower for term in ["financial", "quarterly", "revenue", "10-q"])
+        
+        # Check truncation flag is boolean
+        assert isinstance(is_truncated, bool)

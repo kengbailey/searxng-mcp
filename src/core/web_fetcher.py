@@ -16,20 +16,100 @@ class WebContentFetcher:
             "User-Agent": SearchConfig.USER_AGENT
         }
     
-    async def fetch_and_parse(self, url: str) -> tuple[str,bool]:
+    def _is_pdf_url(self, url: str) -> bool:
+        """Check if URL points to a PDF file based on URL patterns."""
+        url_lower = url.lower()
+        return (
+            url_lower.endswith('.pdf') or
+            '.pdf?' in url_lower or
+            '.pdf#' in url_lower or
+            '/pdf/' in url_lower
+        )
+
+    def _is_pdf_content(self, content_type: str, content_start: bytes) -> bool:
+        """Check if content is PDF based on headers and magic numbers."""
+        # Check Content-Type header
+        if content_type and 'application/pdf' in content_type.lower():
+            return True
+
+        # Check PDF magic numbers
+        if content_start and content_start.startswith(b'%PDF'):
+            return True
+
+        return False
+
+    async def _fetch_via_jina(self, url: str) -> tuple[str, bool]:
+        """Fetch content using Jina Reader API."""
+        fallback_url = f"https://r.jina.ai/{url}"
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                        fallback_url,
+                        timeout=SearchConfig.FETCH_TIMEOUT,
+                    )
+                response.raise_for_status()
+
+                # Truncate if too long 
+                is_truncated = False
+                text = response.text
+                if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
+                    text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
+                    is_truncated = True
+                
+                return text, is_truncated
+            
+        except Exception as e:
+            raise SearchException(f"Failed to fetch via Jina Reader: {e}")
+
+    async def _parse_html_content(self, html_content: str) -> str:
+        """Parse HTML content and extract text."""
+        try:
+            soup = BeautifulSoup(html_content, "lxml")
+        except Exception as e:
+            soup = BeautifulSoup(html_content, "html.parser")
+
+        # Remove script and style elements
+        # TODO: evaluate more comprehensive approach
+        unwanted_tags = [
+            "script", "style", "nav", "header", "footer", "aside",
+            "advertisement", "ads", "sidebar", "menu", "widget", "banner"
+        ]
+        for element in soup(unwanted_tags):
+            element.decompose()
+
+        # Get the text content
+        # TODO: evaluate Readability integration
+        text = soup.get_text()
+
+        # Clean up the text
+        lines = (line.strip() for line in text.splitlines())
+        chunks = (phrase.strip() for line in lines for phrase in line.split(" "))
+        text = " ".join(chunk for chunk in chunks if chunk)
+
+        # Remove extra whitespace
+        text = re.sub(r"\s+", " ", text).strip()
+
+        return text
+
+    async def fetch_and_parse(self, url: str) -> tuple[str, bool]:
         """
-        Fetch and parse content from a webpage.
-        
+        Fetch and parse content from a webpage or PDF.
+
         Args:
             url: The webpage URL to fetch content from
             
         Returns:
-            Parsed text content from the webpage
-            
+            Parsed text content from the webpage/PDF and truncation flag
+
         Raises:
             SearchException: If fetching or parsing fails
         """
         try:
+            # Check if url is a PDF
+            if self._is_pdf_url(url):
+                return await self._fetch_via_jina(url)
+
+            # request
             async with httpx.AsyncClient() as client:
                 response = await client.get(
                     url,
@@ -39,34 +119,16 @@ class WebContentFetcher:
                 )
                 response.raise_for_status()
                 
-                # Parse the HTML
-                try:
-                    soup = BeautifulSoup(response.text, "lxml")
-                except Exception as e:
-                    # Fallback to html.parser if lxml fails
-                    soup = BeautifulSoup(response.text, "html.parser")
-                
-                # Remove script and style elements
-                # TODO: evaluate more comprehensive approach
-                unwanted_tags = [
-                    "script", "style", "nav", "header", "footer", "aside", 
-                    "advertisement", "ads", "sidebar", "menu", "widget", "banner"
-                ]
-                for element in soup(unwanted_tags):
-                    element.decompose()
-                
-                # Get the text content
-                # TODO: evaluate Readability integration
-                text = soup.get_text()
-                
-                # Clean up the text
-                lines = (line.strip() for line in text.splitlines())
-                chunks = (phrase.strip() for line in lines for phrase in line.split(" "))
-                text = " ".join(chunk for chunk in chunks if chunk)
-                
-                # Remove extra whitespace
-                text = re.sub(r"\s+", " ", text).strip()
-                
+                # Check if the response is a PDF
+                content_type = response.headers.get('content-type', '')
+                content_start = response.content[:8] if response.content else b''
+
+                if self._is_pdf_content(content_type, content_start):
+                    return await self._fetch_via_jina(url)
+
+                # Parse as HTML
+                text = await self._parse_html_content(response.text)
+
                 # Truncate if too long
                 is_truncated = False
                 if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
@@ -76,50 +138,12 @@ class WebContentFetcher:
                 return text, is_truncated
                 
         except httpx.TimeoutException:
-            # Fallback to Jina Reader API
-            fallback_url = f"https://r.jina.ai/{url}"
-            try:
-                async with httpx.AsyncClient() as client:
-                    fallback_response = await client.get(
-                        fallback_url,
-                        timeout=SearchConfig.FETCH_TIMEOUT,
-                    )
-                    fallback_response.raise_for_status()
-
-                    # Truncate if too long 
-                    is_truncated = False
-                    text = fallback_response.text
-                    if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
-                        text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
-                        is_truncated = True
-                    
-                    return text, is_truncated
-                
-            except Exception as e:
-                raise SearchException(f"Failed to fetch via Jina Reader: {e}")
+            # Fallback to Jina Reader API for any timeout
+            return await self._fetch_via_jina(url)
 
         except httpx.HTTPError as e:
-            # Fallback to Jina Reader API
-            fallback_url = f"https://r.jina.ai/{url}"
-            try:
-                async with httpx.AsyncClient() as client:
-                    fallback_response = await client.get(
-                        fallback_url,
-                        timeout=SearchConfig.FETCH_TIMEOUT,
-                    )
-                    fallback_response.raise_for_status()
-
-                    # Truncate if too long 
-                    is_truncated = False
-                    text = fallback_response.text
-                    if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
-                        text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
-                        is_truncated = True
-                    
-                    return text, is_truncated
-                
-            except Exception as e:
-                raise SearchException(f"Failed to fetch via Jina Reader: {e}")
-            
+            # Fallback to Jina Reader API for HTTP errors
+            return await self._fetch_via_jina(url)
         except Exception as e:
-            raise SearchException(f"Unexpected error while fetching webpage: {str(e)}")
+            raise SearchException(f"Unexpected error while fetching content: {str(e)}")
+
