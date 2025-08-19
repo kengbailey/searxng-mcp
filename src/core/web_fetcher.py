@@ -2,12 +2,11 @@
 Web content fetching functionality
 """
 
+import re
 import httpx
 from bs4 import BeautifulSoup
-import re
-from typing import Optional
 from .config import SearchConfig, SearchException
-
+        
 
 class WebContentFetcher:
     """Handles fetching and parsing web content."""
@@ -48,6 +47,7 @@ class WebContentFetcher:
                     soup = BeautifulSoup(response.text, "html.parser")
                 
                 # Remove script and style elements
+                # TODO: evaluate more comprehensive approach
                 unwanted_tags = [
                     "script", "style", "nav", "header", "footer", "aside", 
                     "advertisement", "ads", "sidebar", "menu", "widget", "banner"
@@ -56,6 +56,7 @@ class WebContentFetcher:
                     element.decompose()
                 
                 # Get the text content
+                # TODO: evaluate Readability integration
                 text = soup.get_text()
                 
                 # Clean up the text
@@ -75,10 +76,50 @@ class WebContentFetcher:
                 return text, is_truncated
                 
         except httpx.TimeoutException:
-            raise SearchException("Request timed out while fetching the webpage")
-            
+            # Fallback to Jina Reader API
+            fallback_url = f"https://r.jina.ai/{url}"
+            try:
+                async with httpx.AsyncClient() as client:
+                    fallback_response = await client.get(
+                        fallback_url,
+                        timeout=SearchConfig.FETCH_TIMEOUT,
+                    )
+                    fallback_response.raise_for_status()
+
+                    # Truncate if too long 
+                    is_truncated = False
+                    text = fallback_response.text
+                    if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
+                        text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
+                        is_truncated = True
+                    
+                    return text, is_truncated
+                
+            except Exception as e:
+                raise SearchException(f"Failed to fetch via Jina Reader: {e}")
+
         except httpx.HTTPError as e:
-            raise SearchException(f"Could not access the webpage: {str(e)}")
+            # Fallback to Jina Reader API
+            fallback_url = f"https://r.jina.ai/{url}"
+            try:
+                async with httpx.AsyncClient() as client:
+                    fallback_response = await client.get(
+                        fallback_url,
+                        timeout=SearchConfig.FETCH_TIMEOUT,
+                    )
+                    fallback_response.raise_for_status()
+
+                    # Truncate if too long 
+                    is_truncated = False
+                    text = fallback_response.text
+                    if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
+                        text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
+                        is_truncated = True
+                    
+                    return text, is_truncated
+                
+            except Exception as e:
+                raise SearchException(f"Failed to fetch via Jina Reader: {e}")
             
         except Exception as e:
             raise SearchException(f"Unexpected error while fetching webpage: {str(e)}")
