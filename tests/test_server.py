@@ -32,12 +32,12 @@ class TestSearchHandlers:
             # Execute search
             result = self.handlers.search('test query', max_results=5)
             
-            # Verify
+            # Verify - results are now Pydantic models
             assert len(result) == 1
-            assert result[0]['title'] == 'Test Result'
-            assert result[0]['url'] == 'http://example.com'
-            assert result[0]['content'] == 'Test content'
-            assert result[0]['score'] == 0.95
+            assert result[0].title == 'Test Result'
+            assert result[0].url == 'http://example.com'
+            assert result[0].content == 'Test content'
+            assert result[0].score == 0.95
     
     def test_search_max_results_validation(self):
         """Test max_results validation in search."""
@@ -57,34 +57,36 @@ class TestSearchHandlers:
     @patch('src.server.handlers.SearxngClient')
     def test_search_exception_handling(self, mock_client_class):
         """Test search with search exception."""
+        from fastmcp.exceptions import ToolError
+        
         handlers = SearchHandlers()
         handlers.client = Mock()
         
         # Mock SearchException
         handlers.client.search_general.side_effect = SearchException("Search failed")
         
-        # Execute search
-        result = handlers.search('test query')
+        # Execute search - should raise ToolError
+        with pytest.raises(ToolError) as exc_info:
+            handlers.search('test query')
         
-        # Verify error handling
-        assert len(result) == 1
-        assert 'error' in result[0]
-        assert 'Search failed' in result[0]['error']
+        # Verify error message
+        assert 'Search failed' in str(exc_info.value)
     
     @patch.object(SearchHandlers, '__init__', lambda x: None)
     @patch('src.server.handlers.SearxngClient')
     def test_search_unexpected_exception_handling(self, mock_client_class):
         """Test search with unexpected exception."""
+        from fastmcp.exceptions import ToolError
+        
         handlers = SearchHandlers()
         handlers.client = Mock()
         
         # Mock unexpected exception
         handlers.client.search_general.side_effect = ValueError("Unexpected error")
         
-        # Execute search
-        result = handlers.search('test query')
+        # Execute search - should raise ToolError
+        with pytest.raises(ToolError) as exc_info:
+            handlers.search('test query')
         
-        # Verify error handling
-        assert len(result) == 1
-        assert 'error' in result[0]
-        assert 'Unexpected error' in result[0]['error']
+        # Verify error message
+        assert 'Unexpected error' in str(exc_info.value)

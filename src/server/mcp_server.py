@@ -5,21 +5,39 @@ Provides general web search capabilities via SearxNG
 
 import argparse
 import sys
-from typing import Any, Dict, Annotated
+from typing import List, Annotated
+from pydantic import Field
 from fastmcp import FastMCP
 from .handlers import SearchHandlers
+from ..core.models import SearchResultOutput, VideoSearchResultOutput, FetchContentOutput
 
 
 # Create the MCP server
-mcp = FastMCP("Search Server")
+mcp = FastMCP("WebIntel MCP")
 handlers = SearchHandlers()
 
 
-@mcp.tool
+@mcp.tool(
+    tags={"search", "web"},
+    annotations={
+        "title": "Web Search",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+        "idempotentHint": True
+    }
+)
 def search(
-    query: Annotated[str, "The search query to execute"],
-    max_results: Annotated[int, "Maximum number of results to return (default: 10, max: 25)"] = 10
-):
+    query: Annotated[str, Field(
+        description="The search query to execute",
+        min_length=1,
+        max_length=500
+    )],
+    max_results: Annotated[int, Field(
+        description="Maximum number of results to return (default: 10, min: 1, max: 25)",
+        ge=1,
+        le=25
+    )] = 10
+) -> List[SearchResultOutput]:
     """
     Perform a general web search using SearxNG.
     
@@ -29,34 +47,56 @@ def search(
     return handlers.search(query, max_results)
 
 
-@mcp.tool
+@mcp.tool(
+    tags={"search", "video", "youtube"},
+    annotations={
+        "title": "YouTube Video Search",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+        "idempotentHint": True
+    }
+)
 def search_videos(
-    query: Annotated[str, "The video search query to execute"],
-    max_results: Annotated[int, "Maximum number of results to return (default: 10, max: 20)"] = 10
-):
+    query: Annotated[str, Field(
+        description="The video search query to execute",
+        min_length=1,
+        max_length=500
+    )],
+    max_results: Annotated[int, Field(
+        description="Maximum number of results to return (default: 10, min: 1, max: 20)",
+        ge=1,
+        le=20
+    )] = 10
+) -> List[VideoSearchResultOutput]:
     """
     Search for YouTube videos using SearxNG.
     
     Returns:
-        List of video results, each containing:
-        - url: YouTube video URL
-        - title: Video title
-        - author: Channel name
-        - content: Video description/summary
-        - length: Video duration (e.g., "02:02:21")
+        List of video results with url, title, author, content, and length
     """
     return handlers.search_videos(query, max_results)
 
 
 @mcp.tool(
     name="fetch_content",
-    tags={"web", "fetch"},
-    enabled=True,
+    tags={"web", "fetch", "content"},
+    annotations={
+        "title": "Fetch Web Content",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+        "idempotentHint": False
+    }
 )
 async def fetch_content(
-    url: Annotated[str, "The webpage URL to fetch content from"],
-    offset: Annotated[int, "Starting position for content retrieval (use 'next_offset' from previous response)"] = 0
-) -> Dict[str, Any]:
+    url: Annotated[str, Field(
+        description="The webpage URL to fetch content from",
+        min_length=1
+    )],
+    offset: Annotated[int, Field(
+        description="Starting position for content retrieval (default: 0, min: 0). Use 'next_offset' from previous response",
+        ge=0
+    )] = 0
+) -> FetchContentOutput:
     """
     Fetch and parse content from a webpage URL with pagination support.
     
@@ -64,14 +104,7 @@ async def fetch_content(
     use the returned 'next_offset' value in a subsequent call to retrieve the next chunk.
     
     Returns:
-        Dictionary containing:
-        - content: The parsed text content (up to 30,000 characters)
-        - content_length: Length of the returned content chunk
-        - is_truncated: Boolean indicating if more content is available
-        - offset: The offset used for this request
-        - next_offset: The offset to use for the next request (None if not truncated)
-        - total_length: Total length of the full content
-        - success: Boolean indicating if the fetch was successful
+        FetchContentOutput with parsed content and pagination metadata
     """
     return await handlers.fetch_content(url, offset)
 

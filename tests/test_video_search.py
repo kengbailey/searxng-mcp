@@ -25,16 +25,16 @@ class TestVideoSearch:
         assert len(results) <= 5
         
         # Check first result structure
-        if results and "error" not in results[0]:
+        if results:
             first_result = results[0]
-            assert "url" in first_result
-            assert "title" in first_result
-            assert "author" in first_result
-            assert "content" in first_result
-            assert "length" in first_result
+            assert hasattr(first_result, 'url')
+            assert hasattr(first_result, 'title')
+            assert hasattr(first_result, 'author')
+            assert hasattr(first_result, 'content')
+            assert hasattr(first_result, 'length')
             
             # URL should be YouTube
-            assert "youtube.com" in first_result["url"]
+            assert "youtube.com" in first_result.url
     
     def test_search_videos_max_results_validation(self):
         """Test that max_results is properly validated."""
@@ -53,18 +53,18 @@ class TestVideoSearch:
         query = "machine learning"
         results = self.handlers.search_videos(query, max_results=3)
         
-        if results and "error" not in results[0]:
+        if results:
             for result in results:
                 # All required fields should be present
-                assert "url" in result
-                assert "title" in result
-                assert "author" in result
-                assert "content" in result
-                assert "length" in result
+                assert hasattr(result, 'url')
+                assert hasattr(result, 'title')
+                assert hasattr(result, 'author')
+                assert hasattr(result, 'content')
+                assert hasattr(result, 'length')
                 
                 # Types should be correct
-                assert isinstance(result["url"], str)
-                assert isinstance(result["title"], str)
+                assert isinstance(result.url, str)
+                assert isinstance(result.title, str)
                 # author and content can be None
-                if result["length"] is not None:
-                    assert isinstance(result["length"], (str, float))
+                if result.length is not None:
+                    assert isinstance(result.length, (str, float))

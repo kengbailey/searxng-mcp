@@ -26,6 +26,35 @@ class VideoSearchResult(BaseModel):
     thumbnail: Optional[str] = None
 
 
+# Output models for MCP tools
+class SearchResultOutput(BaseModel):
+    """Output model for general search results."""
+    title: str
+    url: str
+    content: Optional[str] = None
+    score: float
+
+
+class VideoSearchResultOutput(BaseModel):
+    """Output model for video search results."""
+    url: str
+    title: str
+    author: Optional[str] = None
+    content: Optional[str] = None
+    length: Optional[Union[str, float]] = None
+
+
+class FetchContentOutput(BaseModel):
+    """Output model for fetch_content tool."""
+    content: str
+    content_length: int
+    is_truncated: bool
+    offset: int
+    next_offset: Optional[int] = None
+    total_length: int
+    success: bool
+
+
 # Raw response model for internal use
 class RawResult(BaseModel):
     url: str

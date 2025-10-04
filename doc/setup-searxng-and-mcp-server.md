@@ -64,12 +64,12 @@ server.limiter: false
 docker compose searxng-compose.yml up -d
 ```
 
-6. Create and run the [searxng-mcp-compose.yml](/doc/searxng-mcp-compose.yml) docker container
+6. Create and run the [webintel-mcp-compose.yml](/doc/searxng-mcp-compose.yaml) docker container
 ```yaml
 services:
-  searxng-mcp:
-    image: ghcr.io/kengbailey/searxng-mcp:latest
-    container_name: searxng-mcp
+  webintel-mcp:
+    image: ghcr.io/kengbailey/webintel-mcp:latest
+    container_name: webintel-mcp
     ports:
       - "3090:3090"
     environment:
@@ -77,8 +77,8 @@ services:
     restart: unless-stopped
 ```
 ```bash
-docker compose searxng-mcp-compose.yml up -d
+docker compose webintel-mcp-compose.yml up -d
 ```
-You should have a running Searxng service and MCP server
-- Searxng: http://localhost:8189/search
-- Searxng-MCP: http://localhost:3090/mcp
+You should have a running SearXNG service and WebIntel MCP server
+- SearXNG: http://localhost:8189/search
+- WebIntel MCP: http://localhost:3090/mcp

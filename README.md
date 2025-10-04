@@ -1,6 +1,6 @@
-# SearXNG MCP Server
+# WebIntel MCP
 
-A simple FastMCP server that exposes SearXNG search functionality as MCP tools for AI assistants.
+A powerful FastMCP server providing intelligent web search and content retrieval tools for AI assistants.
 
 ## Tools
 
@@ -22,19 +22,19 @@ The below instructions will help you get setup with an HTTP MCP server.
 If you have an existing SearXNG instance, pull latest image and run manually
 ```bash
 # Pull 
-docker pull ghcr.io/kengbailey/searxng-mcp:latest
+docker pull ghcr.io/kengbailey/webintel-mcp:latest
 
 # Run 
-docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 ghcr.io/kengbailey/searxng-mcp:latest
+docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 ghcr.io/kengbailey/webintel-mcp:latest
 ```
 Or you can build and run manually
 ```bash
 # Build
-docker build -t searxng-mcp .
+docker build -t webintel-mcp .
 
 # Run
-docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 searxng-mcp
+docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 webintel-mcp
 ```
 The server will be available at `http://localhost:3090/mcp`
 
-NOTE! If you don't have an existing SearXNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearXNG and the MCP server with Docker.
+NOTE! If you don't have an existing SearXNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearXNG and WebIntel MCP with Docker.
