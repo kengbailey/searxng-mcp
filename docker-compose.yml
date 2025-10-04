@@ -1,9 +1,9 @@
 services:
-  searxng-mcp:
-    image: searxng-mcp
-    container_name: searxng-mcp
+  webintel-mcp:
+    build: .
+    container_name: webintel-mcp
     ports:
       - "3090:3090"
     environment:
-      - SEARXNG_HOST=${SEARXNG_HOST:-http://localhost:8189}
+      - SEARXNG_HOST=${SEARXNG_HOST:-http://192.168.8.116:8189}
     restart: unless-stopped
