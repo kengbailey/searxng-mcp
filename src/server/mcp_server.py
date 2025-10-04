@@ -5,7 +5,7 @@ Provides general web search capabilities via SearxNG
 
 import argparse
 import sys
-from typing import Any, Dict
+from typing import Any, Dict, Annotated
 from fastmcp import FastMCP
 from .handlers import SearchHandlers
 
@@ -16,14 +16,13 @@ handlers = SearchHandlers()
 
 
 @mcp.tool
-def search(query: str, max_results: int = 10):
+def search(
+    query: Annotated[str, "The search query to execute"],
+    max_results: Annotated[int, "Maximum number of results to return (default: 10, max: 25)"] = 10
+):
     """
     Perform a general web search using SearxNG.
     
-    Args:
-        query: The search query to execute
-        max_results: Maximum number of results to return (default: 10, max: 25)
-        
     Returns:
         List of search results with title, url, content, score
     """
@@ -31,14 +30,13 @@ def search(query: str, max_results: int = 10):
 
 
 @mcp.tool
-def search_videos(query: str, max_results: int = 10):
+def search_videos(
+    query: Annotated[str, "The video search query to execute"],
+    max_results: Annotated[int, "Maximum number of results to return (default: 10, max: 20)"] = 10
+):
     """
     Search for YouTube videos using SearxNG.
     
-    Args:
-        query: The search query to execute
-        max_results: Maximum number of results to return (default: 10, max: 20)
-        
     Returns:
         List of video results, each containing:
         - url: YouTube video URL
@@ -55,18 +53,16 @@ def search_videos(query: str, max_results: int = 10):
     tags={"web", "fetch"},
     enabled=True,
 )
-async def fetch_content(url: str, offset: int = 0) -> Dict[str, Any]:
+async def fetch_content(
+    url: Annotated[str, "The webpage URL to fetch content from"],
+    offset: Annotated[int, "Starting position for content retrieval (use 'next_offset' from previous response)"] = 0
+) -> Dict[str, Any]:
     """
     Fetch and parse content from a webpage URL with pagination support.
     
     Content is retrieved in chunks of 30,000 characters. If content is truncated,
     use the returned 'next_offset' value in a subsequent call to retrieve the next chunk.
     
-    Args:
-        url: The webpage URL to fetch content from
-        offset: Starting position for content retrieval (default: 0). Use the 'next_offset'
-                value from a previous response to fetch the next chunk of content.
-        
     Returns:
         Dictionary containing:
         - content: The parsed text content (up to 30,000 characters)
