@@ -55,6 +55,14 @@ class FetchContentOutput(BaseModel):
     success: bool
 
 
+class YouTubeContentOutput(BaseModel):
+    """Output model for fetch_youtube_content tool."""
+    video_id: str
+    transcript: str
+    transcript_length: int
+    success: bool
+
+
 # Raw response model for internal use
 class RawResult(BaseModel):
     url: str

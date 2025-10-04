@@ -15,6 +15,10 @@ A powerful FastMCP server providing intelligent web search and content retrieval
   - `url` (required) - URL to fetch content from
   - `offset` (optional) - starting position for content retrieval (default: 0)
   - **Pagination**: Content is retrieved in 30K character chunks. When truncated, use the `next_offset` value from the response to fetch the next chunk.
+- **`fetch_youtube_content`** - Fetch and transcribe YouTube video audio
+  - `video_id` (required) - YouTube video ID or full URL (e.g., 'dQw4w9WgXcQ' or 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+  - Returns: video_id, transcript, transcript_length, success
+  - **Note**: Requires a running STT (Speech-to-Text) service endpoint
 
 ## Use with Docker
 The below instructions will help you get setup with an HTTP MCP server. 

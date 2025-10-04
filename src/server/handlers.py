@@ -6,8 +6,9 @@ from typing import List, Dict, Any
 from fastmcp.exceptions import ToolError
 from ..core.search import SearxngClient
 from ..core.web_fetcher import WebContentFetcher
+from ..core.youtube_fetcher import YouTubeContentFetcher
 from ..core.config import SearchConfig, SearchException
-from ..core.models import SearchResultOutput, VideoSearchResultOutput, FetchContentOutput
+from ..core.models import SearchResultOutput, VideoSearchResultOutput, FetchContentOutput, YouTubeContentOutput
 
 
 class SearchHandlers:
@@ -16,6 +17,7 @@ class SearchHandlers:
     def __init__(self):
         self.client = SearxngClient()
         self.fetcher = WebContentFetcher()
+        self.youtube_fetcher = YouTubeContentFetcher()
     
     def search(self, query: str, max_results: int = 10) -> List[SearchResultOutput]:
         """
@@ -126,5 +128,32 @@ class SearchHandlers:
             )
         except SearchException as e:
             raise ToolError(f"Failed to fetch content: {str(e)}")
+        except Exception as e:
+            raise ToolError(f"Unexpected error: {str(e)}")
+    
+    def fetch_youtube_content(self, video_id: str) -> YouTubeContentOutput:
+        """
+        Fetch and transcribe YouTube video content.
+        
+        Args:
+            video_id: YouTube video ID or full URL
+            
+        Returns:
+            YouTubeContentOutput containing the video ID and transcript
+        """
+        # Validate video_id
+        if not video_id or not video_id.strip():
+            raise ToolError("Video ID or URL cannot be empty")
+        
+        try:
+            vid_id, transcript = self.youtube_fetcher.fetch_and_transcribe(video_id)
+            return YouTubeContentOutput(
+                video_id=vid_id,
+                transcript=transcript,
+                transcript_length=len(transcript),
+                success=True
+            )
+        except SearchException as e:
+            raise ToolError(f"Failed to fetch YouTube content: {str(e)}")
         except Exception as e:
             raise ToolError(f"Unexpected error: {str(e)}")

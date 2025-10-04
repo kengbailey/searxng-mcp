@@ -1,9 +1,12 @@
 services:
   webintel-mcp:
-    build: .
+    image: webintel-mcp:latest
     container_name: webintel-mcp
     ports:
       - "3090:3090"
     environment:
       - SEARXNG_HOST=${SEARXNG_HOST:-http://192.168.8.116:8189}
+      - STT_ENDPOINT=${STT_ENDPOINT:-http://192.168.8.116:8000/v1}
+      - STT_MODEL=${STT_MODEL:-Systran/faster-distil-whisper-large-v3}
+      - STT_API_KEY=${STT_API_KEY:-dummy}
     restart: unless-stopped

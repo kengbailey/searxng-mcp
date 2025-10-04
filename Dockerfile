@@ -13,6 +13,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y \
     --no-install-recommends \
     curl \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first to leverage Docker layer caching
@@ -21,6 +22,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
+
+# ensure latest version
+RUN pip install --no-cache-dir -U "yt-dlp[default]"
 
 # Copy the entire src directory and its structure
 COPY src/ ./src/

@@ -9,7 +9,7 @@ from typing import List, Annotated
 from pydantic import Field
 from fastmcp import FastMCP
 from .handlers import SearchHandlers
-from ..core.models import SearchResultOutput, VideoSearchResultOutput, FetchContentOutput
+from ..core.models import SearchResultOutput, VideoSearchResultOutput, FetchContentOutput, YouTubeContentOutput
 
 
 # Create the MCP server
@@ -107,6 +107,35 @@ async def fetch_content(
         FetchContentOutput with parsed content and pagination metadata
     """
     return await handlers.fetch_content(url, offset)
+
+
+@mcp.tool(
+    name="fetch_youtube_content",
+    tags={"youtube", "transcript", "content"},
+    annotations={
+        "title": "Fetch YouTube Transcript",
+        "readOnlyHint": True,
+        "openWorldHint": True,
+        "idempotentHint": False
+    }
+)
+def fetch_youtube_content(
+    video_id: Annotated[str, Field(
+        description="YouTube video ID or full URL (e.g., 'dQw4w9WgXcQ' or 'https://www.youtube.com/watch?v=dQw4w9WgXcQ')",
+        min_length=1,
+        max_length=200
+    )]
+) -> YouTubeContentOutput:
+    """
+    Fetch and transcribe YouTube video content using STT.
+    
+    Downloads the audio from a YouTube video and transcribes it using a
+    speech-to-text service. Accepts either a video ID or full YouTube URL.
+    
+    Returns:
+        YouTubeContentOutput with video_id, transcript, and metadata
+    """
+    return handlers.fetch_youtube_content(video_id)
 
 
 def run_server():
