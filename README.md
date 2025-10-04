@@ -6,7 +6,11 @@ A simple FastMCP server that exposes SearXNG search functionality as MCP tools f
 
 - **`search`** - Returns full search results with titles, URLs, snippets, scores
   - `query` (required) - search terms
-  - `max_results` (optional) - number of results 
+  - `max_results` (optional) - number of results (default: 10, max: 25)
+- **`search_videos`** - Search for YouTube videos
+  - `query` (required) - video search terms
+  - `max_results` (optional) - number of results (default: 10, max: 20)
+  - Returns: url, title, author, content summary, length
 - **`fetch_content`** - Returns the content of a URL with pagination support
   - `url` (required) - URL to fetch content from
   - `offset` (optional) - starting position for content retrieval (default: 0)

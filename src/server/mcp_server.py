@@ -30,6 +30,26 @@ def search(query: str, max_results: int = 10):
     return handlers.search(query, max_results)
 
 
+@mcp.tool
+def search_videos(query: str, max_results: int = 10):
+    """
+    Search for YouTube videos using SearxNG.
+    
+    Args:
+        query: The search query to execute
+        max_results: Maximum number of results to return (default: 10, max: 20)
+        
+    Returns:
+        List of video results, each containing:
+        - url: YouTube video URL
+        - title: Video title
+        - author: Channel name
+        - content: Video description/summary
+        - length: Video duration (e.g., "02:02:21")
+    """
+    return handlers.search_videos(query, max_results)
+
+
 @mcp.tool(
     name="fetch_content",
     tags={"web", "fetch"},

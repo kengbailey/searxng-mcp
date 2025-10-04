@@ -53,6 +53,45 @@ class SearchHandlers:
             # Handle unexpected errors
             return [{"error": f"Unexpected error: {str(e)}"}]
     
+    def search_videos(self, query: str, max_results: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search for YouTube videos using SearxNG.
+        
+        Args:
+            query: The search query to execute
+            max_results: Maximum number of results to return (default: 10, max: 20)
+            
+        Returns:
+            List of video results with url, title, author, content, and length
+        """
+        # Validate max_results
+        if max_results > SearchConfig.MAX_VIDEO_RESULTS:
+            max_results = SearchConfig.MAX_VIDEO_RESULTS
+        elif max_results < 1:
+            max_results = 1
+        
+        try:
+            # Call the video search function (YouTube only)
+            results = self.client.search_videos(query, engines='youtube', max_results=max_results)
+            
+            # Convert Pydantic models to dictionaries for JSON serialization
+            return [
+                {
+                    "url": result.url,
+                    "title": result.title,
+                    "author": result.author,
+                    "content": result.content,
+                    "length": result.duration,
+                }
+                for result in results
+            ]
+        except SearchException as e:
+            # Return an error result that the LLM can understand
+            return [{"error": f"Video search failed: {str(e)}"}]
+        except Exception as e:
+            # Handle unexpected errors
+            return [{"error": f"Unexpected error: {str(e)}"}]
+    
     async def fetch_content(self, url: str, offset: int = 0) -> Dict[str, Any]:
         """
         Fetch and parse content from a webpage URL with pagination support.
