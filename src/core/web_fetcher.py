@@ -61,6 +61,37 @@ class WebContentFetcher:
         except Exception as e:
             raise SearchException(f"Failed to fetch via Jina Reader: {e}")
 
+    def _apply_offset_and_chunk(self, content: str, offset: int) -> tuple[str, bool, int, int]:
+        """
+        Apply offset and chunk the content.
+        
+        Args:
+            content: Full content text
+            offset: Starting position
+            
+        Returns:
+            Tuple of (content_chunk, is_truncated, next_offset, total_length)
+        """
+        total_length = len(content)
+        
+        # If offset is beyond content, return empty
+        if offset >= total_length:
+            return "", False, total_length, total_length
+        
+        # Calculate end position
+        end_pos = min(offset + SearchConfig.MAX_CONTENT_LENGTH, total_length)
+        
+        # Extract chunk
+        content_chunk = content[offset:end_pos]
+        
+        # Determine if truncated
+        is_truncated = end_pos < total_length
+        
+        # Calculate next offset
+        next_offset = end_pos if is_truncated else total_length
+        
+        return content_chunk, is_truncated, next_offset, total_length
+    
     async def _parse_html_content(self, html_content: str) -> str:
         """Parse HTML content and extract text."""
         try:
@@ -91,23 +122,29 @@ class WebContentFetcher:
 
         return text
 
-    async def fetch_and_parse(self, url: str) -> tuple[str, bool]:
+    async def fetch_and_parse(self, url: str, offset: int = 0) -> tuple[str, bool, int, int]:
         """
         Fetch and parse content from a webpage or PDF.
 
         Args:
             url: The webpage URL to fetch content from
+            offset: Starting position for content retrieval (default: 0)
             
         Returns:
-            Parsed text content from the webpage/PDF and truncation flag
+            Tuple of (parsed_text, is_truncated, next_offset, total_length)
 
         Raises:
             SearchException: If fetching or parsing fails
         """
         try:
+            # Validate offset
+            if offset < 0:
+                offset = 0
+            
             # Check if url is a PDF
             if self._is_pdf_url(url):
-                return await self._fetch_via_jina(url)
+                content, was_truncated = await self._fetch_via_jina(url)
+                return self._apply_offset_and_chunk(content, offset)
 
             # request
             async with httpx.AsyncClient() as client:
@@ -124,26 +161,23 @@ class WebContentFetcher:
                 content_start = response.content[:8] if response.content else b''
 
                 if self._is_pdf_content(content_type, content_start):
-                    return await self._fetch_via_jina(url)
+                    content, was_truncated = await self._fetch_via_jina(url)
+                    return self._apply_offset_and_chunk(content, offset)
 
                 # Parse as HTML
                 text = await self._parse_html_content(response.text)
 
-                # Truncate if too long
-                is_truncated = False
-                if len(text) > SearchConfig.MAX_CONTENT_LENGTH:
-                    text = text[:SearchConfig.MAX_CONTENT_LENGTH] + "... [content truncated]"
-                    is_truncated = True
-                
-                return text, is_truncated
+                # Apply offset and chunking
+                return self._apply_offset_and_chunk(text, offset)
                 
         except httpx.TimeoutException:
             # Fallback to Jina Reader API for any timeout
-            return await self._fetch_via_jina(url)
+            content, was_truncated = await self._fetch_via_jina(url)
+            return self._apply_offset_and_chunk(content, offset)
 
         except httpx.HTTPError as e:
             # Fallback to Jina Reader API for HTTP errors
-            return await self._fetch_via_jina(url)
+            content, was_truncated = await self._fetch_via_jina(url)
+            return self._apply_offset_and_chunk(content, offset)
         except Exception as e:
             raise SearchException(f"Unexpected error while fetching content: {str(e)}")
-

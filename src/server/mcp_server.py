@@ -35,17 +35,29 @@ def search(query: str, max_results: int = 10):
     tags={"web", "fetch"},
     enabled=True,
 )
-async def fetch_content(url: str) -> Dict[str, Any]:
+async def fetch_content(url: str, offset: int = 0) -> Dict[str, Any]:
     """
-    Fetch and parse content from a webpage URL.
+    Fetch and parse content from a webpage URL with pagination support.
+    
+    Content is retrieved in chunks of 30,000 characters. If content is truncated,
+    use the returned 'next_offset' value in a subsequent call to retrieve the next chunk.
     
     Args:
         url: The webpage URL to fetch content from
+        offset: Starting position for content retrieval (default: 0). Use the 'next_offset'
+                value from a previous response to fetch the next chunk of content.
         
     Returns:
-        Dictionary containing parsed content and metadata
+        Dictionary containing:
+        - content: The parsed text content (up to 30,000 characters)
+        - content_length: Length of the returned content chunk
+        - is_truncated: Boolean indicating if more content is available
+        - offset: The offset used for this request
+        - next_offset: The offset to use for the next request (None if not truncated)
+        - total_length: Total length of the full content
+        - success: Boolean indicating if the fetch was successful
     """
-    return await handlers.fetch_content(url)
+    return await handlers.fetch_content(url, offset)
 
 
 def run_server():

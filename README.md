@@ -7,8 +7,10 @@ A simple FastMCP server that exposes SearXNG search functionality as MCP tools f
 - **`search`** - Returns full search results with titles, URLs, snippets, scores
   - `query` (required) - search terms
   - `max_results` (optional) - number of results 
-- **`fetch_content`** - Returns the content of a URL
+- **`fetch_content`** - Returns the content of a URL with pagination support
   - `url` (required) - URL to fetch content from
+  - `offset` (optional) - starting position for content retrieval (default: 0)
+  - **Pagination**: Content is retrieved in 30K character chunks. When truncated, use the `next_offset` value from the response to fetch the next chunk.
 
 ## Use with Docker
 The below instructions will help you get setup with an HTTP MCP server. 
@@ -32,10 +34,3 @@ docker run -p 3090:3090 -e SEARXNG_HOST=http://localhost:8189 searxng-mcp
 The server will be available at `http://localhost:3090/mcp`
 
 NOTE! If you don't have an existing SearXNG instance, you can use the [setup-searxng-and-mcp-server.md](/doc/setup-searxng-and-mcp-server.md) doc. It has full instructions on setting up both SearXNG and the MCP server with Docker.
-
-<hr>
-
-#### TODO
-- [ ] Add support for setting search types (e.g. general, videos, news)
-- [ ] Add support for setting search engines (e.g. google, bing, duckduckgo)
-- [ ] Add instructions for simple python setup

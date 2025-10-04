@@ -53,22 +53,26 @@ class SearchHandlers:
             # Handle unexpected errors
             return [{"error": f"Unexpected error: {str(e)}"}]
     
-    async def fetch_content(self, url: str) -> Dict[str, Any]:
+    async def fetch_content(self, url: str, offset: int = 0) -> Dict[str, Any]:
         """
-        Fetch and parse content from a webpage URL.
+        Fetch and parse content from a webpage URL with pagination support.
         
         Args:
             url: The webpage URL to fetch content from
+            offset: Starting position for content retrieval (default: 0)
             
         Returns:
-            Dictionary containing the parsed content or error information
+            Dictionary containing the parsed content, pagination metadata, or error information
         """
         try:
-            content, is_truncated = await self.fetcher.fetch_and_parse(url)
+            content, is_truncated, next_offset, total_length = await self.fetcher.fetch_and_parse(url, offset)
             return {
                 "content": content,
                 "content_length": len(content),
                 "is_truncated": is_truncated,
+                "offset": offset,
+                "next_offset": next_offset if is_truncated else None,
+                "total_length": total_length,
                 "success": True
             }
         except SearchException as e:
